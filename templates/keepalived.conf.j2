@@ -87,6 +87,7 @@ vrrp_instance {{ name }} {
   priority {{ instance.priority }}
   {% if instance.native_ipv6 | default(false) %}
   native_ipv6
+  version 3
   {% endif %}
   {% if instance.nopreempt is defined and instance.nopreempt | bool %}
   nopreempt                                        # Override VRRP RFC preemption default
