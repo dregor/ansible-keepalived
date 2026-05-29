@@ -14,22 +14,25 @@
 # limitations under the License.
 
 - name: Get list of SELinux modules loaded
-  command: semodule -l
-  changed_when: False
+  ansible.builtin.command: semodule -l
+  changed_when: false
   register: selinux_modules
+  check_mode: false
 
 - name: Ensure SELinux packages are installed
-  yum:
-    name:
-      - libselinux
-      - libselinux-devel
-      - checkpolicy
-      - policycoreutils-python
+  ansible.builtin.package:
+    name: "{{ keepalived_selinux_packages }}"
     state: present
   when:
-    - '"keepalived_ping" not in selinux_modules.stdout'
+    - keepalived_selinux_compile_rules[0] not in selinux_modules.stdout
 
-- include: keepalived_selinux_compile.yml
-  with_items: "{{ keepalived_selinux_compile_rules }}"
+- name: Compile SELinux rules
+  ansible.builtin.include_tasks:
+    file: keepalived_selinux_compile.yml
+  when:
+    - selinux_policy_name not in selinux_modules.stdout
+  loop: "{{ keepalived_selinux_compile_rules }}"
   loop_control:
     loop_var: selinux_policy_name
+  vars:
+    selinux_policy_name_basename: "{{ selinux_policy_name | basename }}"

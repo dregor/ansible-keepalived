@@ -1,5 +1,5 @@
 ---
-# Copyright 2015, Jean-Philippe Evrard <jean-philippe@evrard.me>
+# Copyright 2021, Sherwin Daganato <sherwin@daganato.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Restart keepalived
-  ansible.builtin.service:
-    name: "{{ keepalived_service_name }}"
-    state: "restarted"
-  register: _servicerestart
-  when:
-    - _servicestart is not changed
+keepalived_package_name: "keepalived"
+keepalived_service_name: "keepalived"
+keepalived_config_file_path: "/etc/keepalived/keepalived.conf"
+_keepalived_daemon_options_file_path: "/etc/sysconfig/keepalived"
 
-- name: Reload keepalived
-  ansible.builtin.service:
-    name: "{{ keepalived_service_name }}"
-    state: "reloaded"
-  register: _servicereload
-  when:
-    - _servicestart is not changed
-    - _servicerestart is not defined
+# Packages for Selinux
+keepalived_selinux_packages:
+  - python3-policycoreutils
+  - libselinux
+  - libselinux-devel

@@ -14,38 +14,30 @@
 # limitations under the License.
 
 - name: Create directory for compiling SELinux role
-  file:
-    path: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name }}"
+  ansible.builtin.file:
+    path: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name_basename }}"
     state: directory
     mode: '0755'
-  when:
-    - selinux_policy_name not in selinux_modules.stdout
 
 - name: Deploy SELinux policy source file
-  copy:
+  ansible.builtin.copy:
     src: "{{ selinux_policy_name }}.te"
-    dest: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name }}/{{ selinux_policy_name }}.te"
+    dest: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name_basename }}/{{ selinux_policy_name_basename }}.te"
     owner: root
     group: root
     mode: "0755"
-  when:
-    - selinux_policy_name not in selinux_modules.stdout
 
 - name: Compile and load SELinux module
-  command: "{{ item }}"
+  ansible.builtin.command: "{{ item }}"
   args:
-    creates: "/etc/selinux/targeted/active/modules/400/{{ selinux_policy_name }}/cil"
-    chdir: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name }}"
-  with_items:
-    - checkmodule -M -m -o {{ selinux_policy_name }}.mod {{ selinux_policy_name }}.te
-    - semodule_package -o {{ selinux_policy_name }}.pp -m {{ selinux_policy_name }}.mod
-    - semodule -i {{ selinux_policy_name }}.pp
-  when:
-    - selinux_policy_name not in selinux_modules.stdout
+    creates: "/etc/selinux/targeted/active/modules/400/{{ selinux_policy_name_basename }}/cil"
+    chdir: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name_basename }}"
+  loop:
+    - checkmodule -M -m -o {{ selinux_policy_name_basename }}.mod {{ selinux_policy_name_basename }}.te
+    - semodule_package -o {{ selinux_policy_name_basename }}.pp -m {{ selinux_policy_name_basename }}.mod
+    - semodule -i {{ selinux_policy_name_basename }}.pp
 
 - name: Remove temporary directory
-  file:
-    path: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name }}"
+  ansible.builtin.file:
+    path: "/tmp/ansible-keepalived-selinux-{{ selinux_policy_name_basename }}"
     state: absent
-  when:
-    - selinux_policy_name not in selinux_modules.stdout
