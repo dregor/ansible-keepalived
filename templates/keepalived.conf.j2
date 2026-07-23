@@ -18,6 +18,15 @@
 {{ ansible_managed | comment }}
 {% endif %}
 
+{% if keepalived_static_routes is defined %}
+static_routes
+{
+{% for route in keepalived_static_routes %}
+  {{ route }}
+{% endfor %}
+}
+{% endif %}
+
 {% if keepalived_global_defs is defined %}
 global_defs {
 {% for def in keepalived_global_defs %}
@@ -174,6 +183,7 @@ vrrp_instance {{ name }} {
   {% endif %}
   {% if instance.native_ipv6 is defined and instance.native_ipv6 | bool %}
   native_ipv6
+  version 3                                        # native IPv6 VRRP (multicast) requires protocol v3
   {% endif %}
 
   {% if instance.authentication_password is defined %}
